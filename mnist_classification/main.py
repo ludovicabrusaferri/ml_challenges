@@ -9,6 +9,7 @@ import tensorflow_datasets as tfds
 from sklearn.preprocessing import StandardScaler, OneHotEncoder
 from skimage.transform import rescale
 import tensorflow as tf
+import matplotlib.pyplot as plt
 
 
 def get_input():
@@ -340,7 +341,24 @@ def test(model, x_test, y_test):
 
     print("Loss: {0}, Accuracy: {1}".format(str(loss.numpy()), str(accuracy.numpy())))
 
-    return model
+    return model, y_pred
+
+
+def plot_test(x_test, preds):
+    # Ensure x_test and preds have the same length
+    if len(x_test) != len(preds):
+        raise ValueError("x_test and preds must have the same length")
+
+    # Create a 5x5 grid of subplots to display the images and predictions
+    plt.figure(figsize=(10, 10))  # Adjust the figure size as needed
+
+    for i in range(25):  # Display up to 25 images
+        plt.subplot(5, 5, i + 1)  # Subplot index starts from 1
+        plt.imshow(x_test[i], cmap='gray')
+        plt.title("Predicted: {0}".format(tf.argmax(preds[i].numpy())))
+        plt.axis("off")
+
+    plt.show()  # Display the entire grid of images
 
 
 def main():
@@ -356,7 +374,9 @@ def main():
                                          weight_decay=1e-04)
 
     model = train(model, optimiser, x_train, y_train)
-    test(model, x_test, y_test)
+    _, y_pred = test(model, x_test, y_test)
+
+    plot_test(x_test, y_pred)
 
     return True
 
