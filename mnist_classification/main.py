@@ -1,7 +1,7 @@
-# Copyright University College London 2023
+# Copyright University College London, LSBU, 2023
 # Author: Alexander C. Whitehead, Department of Computer Science, UCL
+# Author: Ludovica Brusaferri, Department of Computer Science and Informatics, School of Engineering, LSBU
 # For internal research only.
-
 
 import numpy as np
 import einops
