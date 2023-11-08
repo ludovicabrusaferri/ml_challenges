@@ -133,17 +133,18 @@ def get_model_dense(x_train, y_train):
     return model
 
 
-def get_model_conv(x_train, y_train):
+def get_model_conv(x_train, y_train, input_kernel_size, stride):
     print("get_model")
 
-    filters = [128, 256, 512, 1024]
+    num_powers = 5  # Change this to the desired number
+    filters = [pow(2, i) for i in range(num_powers)]
 
     x_input = tf.keras.Input(shape=x_train.shape[1:])
     x = x_input
 
     x = tf.keras.layers.Conv2D(filters=filters[0],
-                               kernel_size=(7, 7),
-                               strides=(1, 1),
+                               kernel_size=(input_kernel_size, input_kernel_size),
+                               strides=(stride, stride),
                                padding="same",
                                dilation_rate=1,
                                kernel_initializer=tf.keras.initializers.he_uniform)(x)
