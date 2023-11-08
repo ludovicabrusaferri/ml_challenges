@@ -12,10 +12,10 @@ import tensorflow as tf
 import matplotlib.pyplot as plt
 
 
-def get_input():
+def get_input(datasetname):
     print("get_input")
 
-    dataset = tfds.load("mnist")
+    dataset = tfds.load(datasetname)
 
     dataset_train = dataset["train"]
     dataset_validation = dataset["test"]
@@ -364,7 +364,7 @@ def plot_test(x_test, preds):
 def main():
     print("main")
 
-    x_train, x_test, y_train, y_test = get_input()
+    x_train, x_test, y_train, y_test = get_input("mnist")
     x_train, x_test, y_train, y_test = preprocess_input(x_train, x_test, y_train, y_test)
 
     model = get_model_dense(x_train, y_train)
