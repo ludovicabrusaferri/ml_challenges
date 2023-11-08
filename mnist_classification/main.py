@@ -368,13 +368,16 @@ def main():
     x_train, x_test, y_train, y_test = get_input("mnist")
     x_train, x_test, y_train, y_test = preprocess_input(x_train, x_test, y_train, y_test)
 
+    # use dense
     model = get_model_dense(x_train, y_train)
     model.summary()
 
     optimiser = tf.keras.optimizers.Adam(learning_rate=1e-04,
                                          weight_decay=1e-04)
 
+    # train standard
     model = train(model, optimiser, x_train, y_train)
+
     _, y_pred = test(model, x_test, y_test)
 
     plot_test(x_test, y_pred)
