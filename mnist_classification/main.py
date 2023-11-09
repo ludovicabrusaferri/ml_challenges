@@ -145,11 +145,55 @@ def get_model_dense(x_train, y_train):
     return model
 
 
+def conv_block(x, filters, kernel_size, pool_size):
+    x = tf.keras.layers.Conv2D(filters=filters, kernel_size=kernel_size)(x)
+    x = tf.keras.layers.Activation('relu')(x)
+    x = tf.keras.layers.MaxPooling2D(pool_size)(x)
+    return x
+
+
+def dense_block(x, units, activation):
+    x = tf.keras.layers.Dense(units=units)(x)
+    x = tf.keras.layers.Activation(activation)(x)
+    return x
+
+
+def get_model_ludo(x_train, y_train, input_kernel_size):
+    print("get_model")
+
+    x_input = tf.keras.Input(shape=x_train.shape[1:])
+    x = x_input
+
+    start_power = 5
+    num_elements = 2  # Change this to the desired number
+    filters = [pow(2, i) for i in range(start_power, start_power + num_elements)]
+
+    # Convolutional layers
+    x = conv_block(x, filters[0], (input_kernel_size, input_kernel_size), (2, 2))
+    x = conv_block(x, filters[1], (3, 3), (2, 2))
+
+    # Flatten
+    x = tf.keras.layers.Flatten()(x)
+
+    # Dense layers
+    x = dense_block(x, units=800, activation='relu')
+
+    #x = tf.keras.layers.Dropout(0.5)(x)  # Could add dropout
+
+    # Dense layers
+    x = dense_block(x, units=y_train.shape[1], activation='softmax')
+
+    model = tf.keras.Model(inputs=[x_input], outputs=[x])
+
+    return model
+
+
 def get_model_conv(x_train, y_train, input_kernel_size, strides):
     print("get_model")
 
-    num_powers = 4  # Change this to the desired number
-    filters = [pow(2, i) for i in range(5, 5 + num_powers)]
+    start_power = 5
+    num_elements = 4  # Change this to the desired number
+    filters = [pow(2, i) for i in range(start_power, start_power + num_elements)]
 
     x_input = tf.keras.Input(shape=x_train.shape[1:])
     x = x_input
@@ -381,7 +425,7 @@ def main():
     x_train, x_test, y_train, y_test = preprocess_input(x_train, x_test, y_train, y_test)
 
     # use dense
-    model = get_model_dense(x_train, y_train)
+    model = get_model_ludo(x_train, y_train, input_kernel_size=7)
     model.summary()
 
     optimiser = tf.keras.optimizers.Adam(learning_rate=1e-04,
