@@ -164,15 +164,14 @@ def dense_block(x, units, activation, use_dropout=False):
 def get_model_ludo(x_train, y_train, input_kernel_size):
     print("get_model")
 
-    kernel_sizes = [(input_kernel_size, input_kernel_size), (3, 3)]  # Define kernel sizes
+    x_input = tf.keras.Input(shape=x_train.shape[1:])
+    x = x_input
+
+    kernel_sizes = [(7, 7), (3, 3)]  # Define kernel sizes
+
     start_power = 5
     num_elements = len(kernel_sizes)  # Change this to the desired number
     filters = [pow(2, i) for i in range(start_power, start_power + num_elements)]
-    dense_units = 2
-    units = [800, y_train.shape[1]]
-
-    x_input = tf.keras.Input(shape=x_train.shape[1:])
-    x = x_input
 
     # Convolutional layers
     for i, kernel_size in enumerate(kernel_sizes):
@@ -181,13 +180,11 @@ def get_model_ludo(x_train, y_train, input_kernel_size):
     # Flatten
     x = tf.keras.layers.Flatten()(x)
 
-    # Global Average Pooling:
-    # note, This can help reduce the number of parameters and improve generalization instad of flattening
-    #x = tf.keras.layers.GlobalAveragePooling2D()(x)
+    # Dense layers
+    x = dense_block(x, units=800, activation=tf.keras.activations.relu)
 
     # Dense layers
-    for i in range(dense_units):
-        x = dense_block(x, units=units[i], activation=tf.keras.activations.relu, use_dropout=False)
+    x = dense_block(x, units=y_train.shape[1], activation=tf.keras.activations.softmax)
 
     model = tf.keras.Model(inputs=[x_input], outputs=[x])
 
