@@ -151,23 +151,28 @@ def conv_block(x, filters, kernel_size, activation):
     return x
 
 
-def dense_block(x, units, activation):
+def dense_block(x, units, activation, use_dropout=False):
     x = tf.keras.layers.Dense(units=units)(x)
     x = tf.keras.layers.Lambda(activation)(x)
+
+    if use_dropout:
+        x = tf.keras.layers.Dropout(0.5)(x)
+
     return x
 
 
 def get_model_ludo(x_train, y_train, input_kernel_size):
     print("get_model")
 
-    x_input = tf.keras.Input(shape=x_train.shape[1:])
-    x = x_input
-
     kernel_sizes = [(7, 7), (3, 3)]  # Define kernel sizes
-
     start_power = 5
     num_elements = len(kernel_sizes)  # Change this to the desired number
     filters = [pow(2, i) for i in range(start_power, start_power + num_elements)]
+    dense_units = 2
+    units = [800, y_train.shape[1]]
+
+    x_input = tf.keras.Input(shape=x_train.shape[1:])
+    x = x_input
 
     # Convolutional layers
     for i, kernel_size in enumerate(kernel_sizes):
@@ -177,12 +182,8 @@ def get_model_ludo(x_train, y_train, input_kernel_size):
     x = tf.keras.layers.Flatten()(x)
 
     # Dense layers
-    x = dense_block(x, units=800, activation=tf.keras.activations.relu)
-
-    #x = tf.keras.layers.Dropout(0.5)(x)  # Could add dropout
-
-    # Dense layers
-    x = dense_block(x, units=y_train.shape[1], activation=tf.keras.activations.softmax)
+    for i in dense_units:
+        x = dense_block(x, units=units[i], activation=tf.keras.activations.relu, use_dropout=True)
 
     model = tf.keras.Model(inputs=[x_input], outputs=[x])
 
