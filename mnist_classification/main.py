@@ -164,7 +164,7 @@ def dense_block(x, units, activation, use_dropout=False):
 def get_model_ludo(x_train, y_train, input_kernel_size):
     print("get_model")
 
-    kernel_sizes = [(7, 7), (3, 3)]  # Define kernel sizes
+    kernel_sizes = [(input_kernel_size, input_kernel_size), (3, 3)]  # Define kernel sizes
     start_power = 5
     num_elements = len(kernel_sizes)  # Change this to the desired number
     filters = [pow(2, i) for i in range(start_power, start_power + num_elements)]
@@ -182,7 +182,7 @@ def get_model_ludo(x_train, y_train, input_kernel_size):
     x = tf.keras.layers.Flatten()(x)
 
     # Dense layers
-    for i in dense_units:
+    for i in range(dense_units):
         x = dense_block(x, units=units[i], activation=tf.keras.activations.relu, use_dropout=True)
 
     model = tf.keras.Model(inputs=[x_input], outputs=[x])
