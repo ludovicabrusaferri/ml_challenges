@@ -15,10 +15,20 @@ import matplotlib.pyplot as plt
 def get_input(datasetname):
     print("get_input")
 
+    split_ratio = 0.8
     dataset = tfds.load(datasetname)
 
-    dataset_train = dataset["train"]
-    dataset_validation = dataset["test"]
+    # Check if the dataset has both "train" and "test" splits
+    if "train" in dataset and "test" in dataset:
+        dataset_train = dataset["train"]
+        dataset_validation = dataset["test"]
+    else:
+        # If not, split the dataset into training and validation sets
+        dataset_size = tf.data.experimental.cardinality(dataset["train"]).numpy()
+        num_train_examples = int(dataset_size * split_ratio)
+
+        dataset_train = dataset["train"].take(num_train_examples)
+        dataset_validation = dataset["train"].skip(num_train_examples)
 
     x_train = []
     x_test = []
@@ -34,9 +44,11 @@ def get_input(datasetname):
         x_test.append(example["image"].numpy())
         y_test.append(example["label"].numpy())
 
+    # Convert to NumPy arrays
     x_train = np.array(x_train)
     x_test = np.array(x_test)
 
+    # Assuming y_train and y_test are 1D arrays
     y_train = np.array(y_train)
     y_test = np.array(y_test)
 
@@ -365,7 +377,7 @@ def plot_test(x_test, preds):
 def main():
     print("main")
 
-    x_train, x_test, y_train, y_test = get_input("mnist")
+    x_train, x_test, y_train, y_test = get_input("cifar10") #mnist
     x_train, x_test, y_train, y_test = preprocess_input(x_train, x_test, y_train, y_test)
 
     # use dense
