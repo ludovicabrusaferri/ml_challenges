@@ -179,15 +179,15 @@ def get_model_ludo(x_train, y_train, input_kernel_size):
         x = conv_block(x, filters=filters[i], kernel_size=kernel_size, activation=tf.keras.activations.relu)
 
     # Flatten
-    #x = tf.keras.layers.Flatten()(x)
+    x = tf.keras.layers.Flatten()(x)
 
     # Global Average Pooling:
     # note, This can help reduce the number of parameters and improve generalization instad of flattening
-    x = tf.keras.layers.GlobalAveragePooling2D()(x)
+    #x = tf.keras.layers.GlobalAveragePooling2D()(x)
 
     # Dense layers
     for i in range(dense_units):
-        x = dense_block(x, units=units[i], activation=tf.keras.activations.relu, use_dropout=True)
+        x = dense_block(x, units=units[i], activation=tf.keras.activations.relu, use_dropout=False)
 
     model = tf.keras.Model(inputs=[x_input], outputs=[x])
 
