@@ -145,18 +145,18 @@ def get_model_dense(x_train, y_train):
     return model
 
 
-def get_model_conv(x_train, y_train, input_kernel_size, stride):
+def get_model_conv(x_train, y_train, input_kernel_size, strides):
     print("get_model")
 
-    num_powers = 5  # Change this to the desired number
-    filters = [pow(2, i) for i in range(num_powers)]
+    num_powers = 4  # Change this to the desired number
+    filters = [pow(2, i) for i in range(5, 5 + num_powers)]
 
     x_input = tf.keras.Input(shape=x_train.shape[1:])
     x = x_input
 
     x = tf.keras.layers.Conv2D(filters=filters[0],
                                kernel_size=(input_kernel_size, input_kernel_size),
-                               strides=(stride, stride),
+                               strides=(strides, strides),
                                padding="same",
                                dilation_rate=1,
                                kernel_initializer=tf.keras.initializers.he_uniform)(x)
@@ -357,7 +357,7 @@ def test(model, x_test, y_test):
     return model, y_pred
 
 
-def plot_test(x_test, preds):
+def plot_test(x_test, y_test, preds):
     # Ensure x_test and preds have the same length
     if len(x_test) != len(preds):
         raise ValueError("x_test and preds must have the same length")
@@ -368,7 +368,7 @@ def plot_test(x_test, preds):
     for i in range(25):  # Display up to 25 images
         plt.subplot(5, 5, i + 1)  # Subplot index starts from 1
         plt.imshow(x_test[i], cmap='gray')
-        plt.title("Predicted: {0}".format(tf.argmax(preds[i].numpy())))
+        plt.title("P: {0}, T: {1}".format(str(tf.argmax(preds[i]).numpy()), str(tf.argmax(y_test[i]).numpy())))
         plt.axis("off")
 
     plt.show()  # Display the entire grid of images
@@ -377,7 +377,7 @@ def plot_test(x_test, preds):
 def main():
     print("main")
 
-    x_train, x_test, y_train, y_test = get_input("cifar10") #mnist
+    x_train, x_test, y_train, y_test = get_input("cifar10") #mnist, cifar10
     x_train, x_test, y_train, y_test = preprocess_input(x_train, x_test, y_train, y_test)
 
     # use dense
@@ -392,7 +392,7 @@ def main():
 
     _, y_pred = test(model, x_test, y_test)
 
-    plot_test(x_test, y_pred)
+    plot_test(x_test, y_test, y_pred)
 
     return True
 
