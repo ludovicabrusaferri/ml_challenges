@@ -145,16 +145,15 @@ def get_model_dense(x_train, y_train):
     return model
 
 
-def conv_block(x, filters, kernel_size, pool_size):
+def conv_block(x, filters, kernel_size, activation):
     x = tf.keras.layers.Conv2D(filters=filters, kernel_size=kernel_size)(x)
-    x = tf.keras.layers.Activation('relu')(x)
-    x = tf.keras.layers.MaxPooling2D(pool_size)(x)
+    x = tf.keras.layers.Lambda(activation)(x)
     return x
 
 
 def dense_block(x, units, activation):
     x = tf.keras.layers.Dense(units=units)(x)
-    x = tf.keras.layers.Activation(activation)(x)
+    x = tf.keras.layers.Lambda(activation)(x)
     return x
 
 
@@ -169,19 +168,19 @@ def get_model_ludo(x_train, y_train, input_kernel_size):
     filters = [pow(2, i) for i in range(start_power, start_power + num_elements)]
 
     # Convolutional layers
-    x = conv_block(x, filters[0], (input_kernel_size, input_kernel_size), (2, 2))
-    x = conv_block(x, filters[1], (3, 3), (2, 2))
+    x = conv_block(x, filters=filters[0], kernel_size=(input_kernel_size, input_kernel_size), activation=tf.keras.activations.relu)
+    x = conv_block(x, filters=filters[1], kernel_size=(3, 3), activation=tf.keras.activations.relu)
 
     # Flatten
     x = tf.keras.layers.Flatten()(x)
 
     # Dense layers
-    x = dense_block(x, units=800, activation='relu')
+    x = dense_block(x, units=800, activation=tf.keras.activations.relu)
 
     #x = tf.keras.layers.Dropout(0.5)(x)  # Could add dropout
 
     # Dense layers
-    x = dense_block(x, units=y_train.shape[1], activation='softmax')
+    x = dense_block(x, units=y_train.shape[1], activation=tf.keras.activations.softmax)
 
     model = tf.keras.Model(inputs=[x_input], outputs=[x])
 
