@@ -167,9 +167,11 @@ def get_model_ludo(x_train, y_train, input_kernel_size):
     num_elements = 2  # Change this to the desired number
     filters = [pow(2, i) for i in range(start_power, start_power + num_elements)]
 
+    kernel_sizes = [(7, 7), (3, 3)]  # Define kernel sizes
+
     # Convolutional layers
-    x = conv_block(x, filters=filters[0], kernel_size=(input_kernel_size, input_kernel_size), activation=tf.keras.activations.relu)
-    x = conv_block(x, filters=filters[1], kernel_size=(3, 3), activation=tf.keras.activations.relu)
+    for i, kernel_size in enumerate(kernel_sizes):
+        x = conv_block(x, filters=filters[i], kernel_size=kernel_size, activation=tf.keras.activations.relu)
 
     # Flatten
     x = tf.keras.layers.Flatten()(x)
