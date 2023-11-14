@@ -167,7 +167,7 @@ def get_model_ludo(x_train, y_train, input_kernel_size):
     x_input = tf.keras.Input(shape=x_train.shape[1:])
     x = x_input
 
-    kernel_sizes = [(7, 7), (3, 3)]  # Define kernel sizes
+    kernel_sizes = [(input_kernel_size, input_kernel_size), (3, 3)]  # Define kernel sizes
 
     start_power = 5
     num_elements = len(kernel_sizes)  # Change this to the desired number
@@ -424,7 +424,7 @@ def plot_test(x_test, y_test, preds):
 def main():
     print("main")
 
-    x_train, x_test, y_train, y_test = get_input("cifar10") #mnist, cifar10
+    x_train, x_test, y_train, y_test = get_input("mnist") #mnist, cifar10
     x_train, x_test, y_train, y_test = preprocess_input(x_train, x_test, y_train, y_test)
 
     # use dense
