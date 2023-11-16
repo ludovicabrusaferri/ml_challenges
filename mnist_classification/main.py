@@ -691,7 +691,7 @@ def plot_test(x_test, y_test, preds):
 def main():
     print("main")
 
-    x_train, x_test, y_train, y_test = get_input("cifar10") #mnist, cifar10
+    x_train, x_test, y_train, y_test = get_input("fashion_mnist") #mnist, cifar10
     x_train, x_test, y_train, y_test = preprocess_input(x_train, x_test, y_train, y_test)
 
     model = get_model_ludo(x_train, y_train, input_kernel_size=7)
@@ -706,7 +706,7 @@ def main():
 
     _, y_pred = test(model, x_test, y_test)
 
-    plot_test(x_test, y_test, y_pred)
+    # plot_test(x_test, y_test, y_pred)
 
     return True
 
