@@ -233,11 +233,17 @@ def leaky_relu(x):
     return x
 
 
-def conv_block(x, filters, kernel_size, activation):
-    x = tf.keras.layers.Conv2D(filters=filters, kernel_size=kernel_size)(x)
-    x = tf.keras.layers.Lambda(activation)(x)
+def conv_block(x, filters, kernel_size, activation, num_conv):
+    for i in range(num_conv):
+        x = tf.keras.layers.Conv2D(filters=filters, kernel_size=kernel_size)(x)
+        x = tf.keras.layers.Lambda(activation)(x)
     return x
 
+
+def down_block(x, filters, kernel_size, strides, activation):
+    x = tf.keras.layers.Conv2D(filters=filters, kernel_size=kernel_size, strides=strides)(x)
+    x = tf.keras.layers.Lambda(activation)(x)
+    return x
 
 def dense_block(x, units, activation):
     x = tf.keras.layers.Dense(units=units)(x)
@@ -254,13 +260,15 @@ def get_model_ludo(x_train, y_train, input_kernel_size):
 
     filters = [64, 128]  # standard to start with 128
 
-    x = conv_block(x, filters=filters[0], kernel_size=input_kernel_size, activation=leaky_relu)
+    x = conv_block(x, filters=filters[0], kernel_size=input_kernel_size, activation=leaky_relu, num_conv=1)
 
     # leaky relu allows negative updates
 
-    x = conv_block(x, filters=filters[0], kernel_size=(3, 3), activation=leaky_relu)
+    x = conv_block(x, filters=filters[0], kernel_size=(3, 3), activation=leaky_relu, num_conv=2)
 
-    x = conv_block(x, filters=filters[1], kernel_size=(3, 3), activation=leaky_relu)
+    x = down_block(x, filters=filters[0], kernel_size=(3, 3), strides=(2, 2), activation=leaky_relu)
+
+    x = conv_block(x, filters=filters[1], kernel_size=(3, 3), activation=leaky_relu, num_conv=2)
 
     # Flatten
     x = tf.keras.layers.GlobalAvgPool2D()(x)
@@ -472,7 +480,7 @@ def train(model, optimiser, x_train, y_train):
 
     epochs = 8
     min_batch_size = 32
-    max_batch_size = 128
+    max_batch_size = 32
 
     min_batch_size = get_next_geometric_value(min_batch_size, 2.0)
     batch_sizes = [min_batch_size]
@@ -513,7 +521,8 @@ def train(model, optimiser, x_train, y_train):
             y_true = []
 
             for k in range(current_batch_size):
-                augmented_x_train = augmentation(x_train[current_index])
+                # augmented_x_train = augmentation(x_train[current_index])
+                augmented_x_train = x_train[current_index]
 
                 current_x_train.append(augmented_x_train)
                 y_true.append(y_train[current_index])
@@ -592,7 +601,9 @@ def train_gradient_accumulation(model, optimiser, x_train, y_train):
             accuracies = []
 
             for m in range(current_batch_size):
-                current_x_train = augmentation(x_train[current_index])
+                #current_x_train = augmentation(x_train[current_index])
+                current_x_train = x_train[current_index]
+
                 y_true = y_train[current_index]
 
                 current_x_train = tf.expand_dims(current_x_train, axis=0)
@@ -680,7 +691,7 @@ def plot_test(x_test, y_test, preds):
 def main():
     print("main")
 
-    x_train, x_test, y_train, y_test = get_input("mnist") #mnist, cifar10
+    x_train, x_test, y_train, y_test = get_input("cifar10") #mnist, cifar10
     x_train, x_test, y_train, y_test = preprocess_input(x_train, x_test, y_train, y_test)
 
     model = get_model_ludo(x_train, y_train, input_kernel_size=7)
@@ -688,7 +699,7 @@ def main():
     model.summary()
 
     optimiser = tf.keras.optimizers.Adam(learning_rate=1e-04,
-                                         weight_decay=1e-04)
+                                         weight_decay=0)
 
     # train standard
     model = train(model, optimiser, x_train, y_train)
