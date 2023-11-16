@@ -228,18 +228,20 @@ def get_model_dense(x_train, y_train):
     return model
 
 
+def leaky_relu(x):
+    x = tf.math.maximum(0.1 * x, x)
+    return x
+
+
 def conv_block(x, filters, kernel_size, activation):
     x = tf.keras.layers.Conv2D(filters=filters, kernel_size=kernel_size)(x)
     x = tf.keras.layers.Lambda(activation)(x)
     return x
 
 
-def dense_block(x, units, activation, use_dropout=False):
+def dense_block(x, units, activation):
     x = tf.keras.layers.Dense(units=units)(x)
     x = tf.keras.layers.Lambda(activation)(x)
-
-    if use_dropout:
-        x = tf.keras.layers.Dropout(0.5)(x)
 
     return x
 
@@ -250,21 +252,21 @@ def get_model_ludo(x_train, y_train, input_kernel_size):
     x_input = tf.keras.Input(shape=x_train.shape[1:])
     x = x_input
 
-    kernel_sizes = [(input_kernel_size, input_kernel_size), (3, 3)]  # Define kernel sizes
+    filters = [64, 128]  # standard to start with 128
 
-    start_power = 5
-    num_elements = len(kernel_sizes)  # Change this to the desired number
-    filters = [pow(2, i) for i in range(start_power, start_power + num_elements)]
+    x = conv_block(x, filters=filters[0], kernel_size=input_kernel_size, activation=leaky_relu)
 
-    # Convolutional layers
-    for i, kernel_size in enumerate(kernel_sizes):
-        x = conv_block(x, filters=filters[i], kernel_size=kernel_size, activation=tf.keras.activations.relu)
+    # leaky relu allows negative updates
+
+    x = conv_block(x, filters=filters[0], kernel_size=(3, 3), activation=leaky_relu)
+
+    x = conv_block(x, filters=filters[1], kernel_size=(3, 3), activation=leaky_relu)
 
     # Flatten
-    x = tf.keras.layers.Flatten()(x)
+    x = tf.keras.layers.GlobalAvgPool2D()(x)
 
     # Dense layers
-    x = dense_block(x, units=800, activation=tf.keras.activations.relu)
+    x = dense_block(x, units=x.shape[-1], activation=leaky_relu)
 
     # Dense layers
     x = dense_block(x, units=y_train.shape[1], activation=tf.keras.activations.softmax)
@@ -680,7 +682,6 @@ def main():
 
     x_train, x_test, y_train, y_test = get_input("mnist") #mnist, cifar10
     x_train, x_test, y_train, y_test = preprocess_input(x_train, x_test, y_train, y_test)
-
 
     model = get_model_ludo(x_train, y_train, input_kernel_size=7)
 
